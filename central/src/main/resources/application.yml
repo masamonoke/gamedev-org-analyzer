@@ -1,0 +1,5 @@
+server:
+  port: 3003
+filters: >
+  http://localhost:12000/predict,
+  http://localhost:12001/backtest

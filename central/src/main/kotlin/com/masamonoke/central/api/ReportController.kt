@@ -22,6 +22,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.LinkedHashMap
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,11 +30,51 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/report")
 class ReportController(
     val restOperations: RestOperations,
-    @Value("\${stock_predictor}") var stockPredictorUrl: String,
+	@Value("\${filters}") var filters: Array<String>,
     val objectMapper: ObjectMapper
     ) {
 
-    private fun requestSymbol(companyName: String): String {
+    @GetMapping
+    fun report(@RequestBody map: Map<String, List<String>>): Any {
+        val companiesScore = ArrayList<CompanyScore>()
+        for (companyName in map["companies"]!!) {
+            try {
+                val symbol = requestSymbol(companyName)
+                val company = Company(companyName, symbol)
+                companiesScore.add(CompanyScore(company))
+            } catch (e: Exception) {
+                logger.info { "Can't find symbol for company: $companyName" }
+            }
+        }
+
+		val evaluatedScores = ArrayList<ArrayList<CompanyScore>>();
+		for (filter in filters) {
+			try {
+				val response = request(filter, companiesScore)
+				val score = readResponse(response)
+				evaluatedScores.add(score)
+			} catch (e: ResourceAccessException) {
+				logger.error { "Cannot reach resource $filter: $e" }
+			} catch (e: HttpServerErrorException) {
+				logger.error { "Requested server $filter thrown error: $e" }
+			}
+		}
+
+		val sumScores = HashMap<String, CompanyScore>()
+		for (scoresList in evaluatedScores) {
+			for (companyScore in scoresList) {
+				val name = companyScore.company.name
+				if (!sumScores.contains(name)) {
+					sumScores[name] = companyScore
+				} else {
+					sumScores[name]!!.totalScore += companyScore.totalScore
+				}
+			}
+		}
+		return sumScores
+    }
+
+	private fun requestSymbol(companyName: String): String {
         val url = "https://query2.finance.yahoo.com/v1/finance/search"
         val userAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
@@ -56,63 +97,44 @@ class ReportController(
         return quote["symbol"] as String
     }
 
-    @GetMapping
-    fun report(@RequestBody map: Map<String, List<String>>): Any {
-        val companiesScore = ArrayList<CompanyScore>()
-        for (companyName in map["companies"]!!) {
-            try {
-                val symbol = requestSymbol(companyName)
-                val company = Company(companyName, symbol)
-                companiesScore.add(CompanyScore(company))
-            } catch (e: Exception) {
-                logger.info { "Can't find symbol for company: $companyName" }
-            }
-        }
+	private fun request(url: String, companiesScore: ArrayList<CompanyScore>): String? {
+		val headers = HttpHeaders()
+		headers.contentType = MediaType.APPLICATION_JSON
+		val restTemplate = RestTemplate()
+		val json = objectMapper.writeValueAsString(companiesScore)
+		val entity = HttpEntity<String>(json, headers)
+		val response = restTemplate.postForObject(url, entity, String::class.java)
+		return response
+	}
 
-        try {
-            val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_JSON
-            val restTemplate = RestTemplate()
-            val json = objectMapper.writeValueAsString(companiesScore)
-            val entity = HttpEntity<String>(json, headers)
-            val response = restTemplate.postForObject(stockPredictorUrl, entity, String::class.java)
-            val mutatedCompanyScoreJsonList = objectMapper.readValue(response, ArrayList::class.java)
-            val mutatedCompaniesScore = ArrayList<CompanyScore>()
-            mutatedCompanyScoreJsonList.forEach {
-                it as LinkedHashMap<*, *>
-                val companyMap = it["company"] as HashMap<*, *>
-                val size = companyMap["size"]
-                val region = companyMap["region"]
-                val country = companyMap["country"]
-                val company = Company(
-                    name = companyMap["name"] as String,
-                    symbol = companyMap["symbol"] as String,
-                    size = if (size == null) null else size as CompanySize,
-                    region = if (region == null) null else region as Region,
-                    country = if (country == null) null else country as String
-                )
-                val totalScore = it["total_score"]
-                val playerReputation = it["players_reputation"]
-                val investorsScore = it["investers_score"]
-                val companyScore = CompanyScore(
-                    company,
-                    totalScore = totalScore as Double,
-                    playersReputation = playerReputation as Double,
-                    investorsScore = investorsScore as Double
-                )
-                mutatedCompaniesScore.add(companyScore)
-            }
-            return mutatedCompaniesScore
-        } catch (e: ResourceAccessException) {
-            logger.error { "Cannot reach resource $stockPredictorUrl: $e" }
-            return ResponseEntity("Cannot reach recourse", HttpStatus.INTERNAL_SERVER_ERROR)
-        } catch (e: HttpServerErrorException) {
-            logger.error { "Requested server thrown error: $e" }
-            return ResponseEntity("Filter service error", HttpStatus.INTERNAL_SERVER_ERROR)
-        } catch (e: NullPointerException) {
-            logger.error { "Double value cannot be null: $e" }
-            return ResponseEntity("Double object is null", HttpStatus.CONFLICT)
-        }
-    }
+	private fun readResponse(response: String?): ArrayList<CompanyScore> {
+		val mutatedCompanyScoreJsonList = objectMapper.readValue(response, ArrayList::class.java)
+		val mutatedCompaniesScore = ArrayList<CompanyScore>()
+		mutatedCompanyScoreJsonList.forEach {
+		    it as LinkedHashMap<*, *>
+		    val companyMap = it["company"] as HashMap<*, *>
+		    val size = companyMap["size"]
+		    val region = companyMap["region"]
+		    val country = companyMap["country"]
+		    val company = Company(
+		        name = companyMap["name"] as String,
+		        symbol = companyMap["symbol"] as String,
+		        size = if (size == null) null else size as CompanySize,
+		        region = if (region == null) null else region as Region,
+		        country = if (country == null) null else country as String
+		    )
+		    val totalScore = it["total_score"]
+		    val playerReputation = it["players_reputation"]
+		    val investorsScore = it["investers_score"]
+		    val companyScore = CompanyScore(
+		        company,
+		        totalScore = totalScore as Double,
+		        playersReputation = playerReputation as Double,
+		        investorsScore = investorsScore as Double
+		    )
+		    mutatedCompaniesScore.add(companyScore)
+		}
+		return mutatedCompaniesScore
+	}
 
 }
