@@ -4,8 +4,12 @@ import yfinance as yf
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import sys
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def backtrack(ticket: str) -> float:
+    logging.info(f"Started backtrack {ticket}")
     cerebro = bt.Cerebro()
     start = dt.datetime.now() - relativedelta(months=5)
     df = yf.download(ticket, start=start)

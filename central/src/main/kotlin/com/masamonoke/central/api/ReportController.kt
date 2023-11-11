@@ -47,19 +47,11 @@ class ReportController(
             }
         }
 
-		val evaluatedScores = ArrayList<ArrayList<CompanyScore>>();
-		for (filter in filters) {
-			try {
-				val response = request(filter, companiesScore)
-				val score = readResponse(response)
-				evaluatedScores.add(score)
-			} catch (e: ResourceAccessException) {
-				logger.error { "Cannot reach resource $filter: $e" }
-			} catch (e: HttpServerErrorException) {
-				logger.error { "Requested server $filter thrown error: $e" }
-			}
-		}
+		val evaluatedScores = evaluateScores(companiesScore)
+		return sum(evaluatedScores)
+    }
 
+	private fun sum(evaluatedScores: ArrayList<ArrayList<CompanyScore>>): HashMap<String, CompanyScore> {
 		val sumScores = HashMap<String, CompanyScore>()
 		for (scoresList in evaluatedScores) {
 			for (companyScore in scoresList) {
@@ -72,7 +64,38 @@ class ReportController(
 			}
 		}
 		return sumScores
-    }
+	}
+
+	private fun evaluateScores(companiesScore: ArrayList<CompanyScore>): ArrayList<ArrayList<CompanyScore>> {
+		val evaluatedScores = ArrayList<ArrayList<CompanyScore>>()
+		val tasks = ArrayList<Thread>()
+		for (filter in filters) {
+			val t = Thread(Runnable {
+				val response = request(filter, companiesScore)
+				logger.info { "running thread" }
+				val score = readResponse(response)
+				synchronized(this) {
+					evaluatedScores.add(score)
+				}
+			})
+			tasks.add(t)
+		}
+
+		try {
+			for (t in tasks) {
+				t.start()
+			}
+			for (t in tasks) {
+				t.join()
+			}
+		} catch (e: ResourceAccessException) {
+			logger.error { "Cannot reach resource: $e" }
+		} catch (e: HttpServerErrorException) {
+			logger.error { "Requested server thrown error: $e" }
+		}
+
+		return evaluatedScores
+	}
 
 	private fun requestSymbol(companyName: String): String {
         val url = "https://query2.finance.yahoo.com/v1/finance/search"
