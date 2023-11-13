@@ -12,13 +12,10 @@ import sys
 import logging
 from threading import Lock
 
-logging.basicConfig(level=logging.INFO)
+sys.path.append("../")
+from loader.loader import get_ticker_data
 
-# the more years the more accurate prediction but training is too long. One year is too short
-def _load_data(symbol: str, years: int = 1) -> pd.DataFrame:
-    start = dt.datetime.now() - relativedelta(years=years)
-    data = yf.download(symbol, start=start)
-    return data
+logging.basicConfig(level=logging.INFO)
 
 def _y(data: pd.DataFrame) -> np.ndarray:
     y = data["Close"]
@@ -57,10 +54,10 @@ def _predict(y:  np.ndarray) -> np.ndarray:
     Y_ = model.predict(X_).reshape(-1, 1)
     return Y_
 
+YEARS = 1
 def evaluate_stocks(symbol: str, lock: Lock) -> float:
-    lock.acquire()
-    data = _load_data(symbol)
-    lock.release()
+    start = dt.datetime.now() - relativedelta(years=YEARS)
+    data = get_ticker_data(symbol, start, lock)
     y = _y(data)
     last_actual = y[-1]
     forecast = _predict(y)

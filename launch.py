@@ -12,7 +12,7 @@ def launch_central():
     lock.acquire()
     os.chdir(wd)
     os.chdir("central")
-    p = subprocess.Popen(["./gradlew clean; ./gradlew build; ./gradlew bootRun"], shell=True)
+    p = subprocess.Popen(["./gradlew clean; ./gradlew build; ./gradlew bootRun --console=plain"], shell=True)
     lock.release()
     p.wait()
 

@@ -72,11 +72,11 @@ class ReportController(
 		for (filter in filters) {
 			val t = Thread(Runnable {
 				val response = request(filter, companiesScore)
-				logger.info { "running thread" }
 				val score = readResponse(response)
 				synchronized(this) {
 					evaluatedScores.add(score)
 				}
+				logger.info { "Completed request to filter: $filter" }
 			})
 			tasks.add(t)
 		}

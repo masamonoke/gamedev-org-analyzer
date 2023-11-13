@@ -5,14 +5,18 @@ import datetime as dt
 from dateutil.relativedelta import relativedelta
 import sys
 import logging
+sys.path.append("../")
+from loader.loader import get_ticker_data
+from threading import Lock
 
 logging.basicConfig(level=logging.INFO)
 
-def backtrack(ticket: str) -> float:
-    logging.info(f"Started backtrack {ticket}")
+def backtrack(ticker: str, lock: Lock) -> float:
+    logging.info(f"Started backtrack {ticker}")
     cerebro = bt.Cerebro()
     start = dt.datetime.now() - relativedelta(months=5)
-    df = yf.download(ticket, start=start)
+    # df = yf.download(ticket, start=start)
+    df = get_ticker_data(ticker, start, lock)
     feed = bt.feeds.PandasData(dataname=df)
     cerebro.adddata(feed)
     cerebro.addstrategy(SmaCross)
