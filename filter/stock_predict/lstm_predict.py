@@ -10,6 +10,7 @@ from tensorflow.keras.models import Sequential
 import time
 import sys
 import logging
+from threading import Lock
 
 logging.basicConfig(level=logging.INFO)
 
@@ -56,8 +57,10 @@ def _predict(y:  np.ndarray) -> np.ndarray:
     Y_ = model.predict(X_).reshape(-1, 1)
     return Y_
 
-def evaluate_stocks(symbol: str) -> float:
+def evaluate_stocks(symbol: str, lock: Lock) -> float:
+    lock.acquire()
     data = _load_data(symbol)
+    lock.release()
     y = _y(data)
     last_actual = y[-1]
     forecast = _predict(y)

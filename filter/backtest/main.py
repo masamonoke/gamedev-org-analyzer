@@ -22,4 +22,4 @@ def backtrack_report():
 
 
 if __name__ == "__main__":
-    app.run(host="localhost", port="12001")
+    app.run(host="localhost", port="12001", threaded=True)
