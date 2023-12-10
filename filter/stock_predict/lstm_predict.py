@@ -54,7 +54,7 @@ def _predict(y:  np.ndarray) -> np.ndarray:
     Y_ = model.predict(X_).reshape(-1, 1)
     return Y_
 
-YEARS = 1
+YEARS = 2
 def evaluate_stocks(symbol: str, lock: Lock) -> float:
     start = dt.datetime.now() - relativedelta(years=YEARS)
     data = get_ticker_data(symbol, start, lock)

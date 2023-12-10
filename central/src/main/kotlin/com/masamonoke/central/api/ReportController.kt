@@ -48,6 +48,7 @@ class ReportController(
         }
 
 		val evaluatedScores = evaluateScores(companiesScore)
+		logger.info { "Evaluated companies" }
 		return sum(evaluatedScores)
     }
 
@@ -126,6 +127,7 @@ class ReportController(
 		val restTemplate = RestTemplate()
 		val json = objectMapper.writeValueAsString(companiesScore)
 		val entity = HttpEntity<String>(json, headers)
+		logger.info { "Getting $url" }
 		val response = restTemplate.postForObject(url, entity, String::class.java)
 		return response
 	}

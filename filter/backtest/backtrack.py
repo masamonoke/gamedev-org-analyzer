@@ -5,9 +5,10 @@ import datetime as dt
 from dateutil.relativedelta import relativedelta
 import sys
 import logging
+from threading import Lock
+
 sys.path.append("../")
 from loader.loader import get_ticker_data
-from threading import Lock
 
 logging.basicConfig(level=logging.INFO)
 

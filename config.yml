@@ -1,3 +1,4 @@
 filters:
   stock_predict
   backtest
+  sentimental
