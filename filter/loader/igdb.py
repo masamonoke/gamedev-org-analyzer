@@ -1,25 +1,22 @@
-import requests
+import datetime as dt
 import json
-import os
 import logging
-from datetime import datetime
-import pycountry
-from tqdm import tqdm
-from threading import Thread, Lock
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 
-import time
+import pycountry
+import requests
 from dateutil.relativedelta import relativedelta
-import datetime as dt
 
-import sys
 sys.path.append("../")
 from config import config_get_key
 from model.igdb import Company, Game
 
 logging.basicConfig(format='%(asctime)s, %(msecs)03d %(levelname)-3s [%(filename)s:%(lineno)d] %(message)s',
-    datefmt='%Y-%m-%d:%H:%M:%S',
-    level=logging.INFO)
+                    datefmt='%Y-%m-%d:%H:%M:%S',
+                    level=logging.INFO)
+
 
 class LoaderIGDB:
     def __init__(self):
@@ -53,14 +50,16 @@ class LoaderIGDB:
         d, p = self.getSubsidiaryGames(j["id"])
         developed += d
         published += p
-        c = Company(j["id"], name, developed, published, j["created_at"], pycountry.countries.get(numeric=str(j["country"])))
+        c = Company(j["id"], name, developed, published, j["created_at"],
+                    pycountry.countries.get(numeric=str(j["country"])))
         return c
 
-    def getSubsidiaryGames(self, id: int) -> list:
+    def getSubsidiaryGames(self, id: int) -> tuple:
         logging.info(f"Getting '{id}' company subsidiary companies")
         headers = self.header()
         raw_data = f"fields *; where parent = {id};"
         r = requests.post("https://api.igdb.com/v4/companies/", headers=headers, data=raw_data)
+        # TODO: make recursive call for subsidiary of these companies until there is none subsidiary
         developed = []
         published = []
         json_data = json.loads(r.text)
@@ -69,8 +68,10 @@ class LoaderIGDB:
         for j in json_data:
             if "developed" in j.keys():
                 d_ids = j["developed"]
-            f1 = self.executor.submit(self.getGamesById, j["developed"], "developed") if "developed" in j.keys() else None
-            f2 = self.executor.submit(self.getGamesById, j["published"], "published") if "published" in j.keys() else None
+            f1 = self.executor.submit(self.getGamesById, j["developed"],
+                                      "developed") if "developed" in j.keys() else None
+            f2 = self.executor.submit(self.getGamesById, j["published"],
+                                      "published") if "published" in j.keys() else None
             if f1 != None:
                 results.append(f1)
             if f2 != None:
@@ -120,7 +121,6 @@ class LoaderIGDB:
             g = Game(j["name"], first_release_date, genres, hypes, rating, rating_count)
             games.append(g)
         return (games, t)
-
 
     def _getGenresById(self, ids: list):
         ids_text = ",".join(ids)

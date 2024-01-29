@@ -17,6 +17,7 @@ from loader.loader import get_ticker_data
 
 logging.basicConfig(level=logging.INFO)
 
+
 def _y(data: pd.DataFrame) -> np.ndarray:
     y = data["Close"]
     y = y.values.reshape(-1, 1)
@@ -24,6 +25,7 @@ def _y(data: pd.DataFrame) -> np.ndarray:
     scaler = scaler.fit(y, scaler)
     y = scaler.transform(y)
     return y
+
 
 def __build_model(lookback_days: int, predict_days: int) -> Sequential:
     model = Sequential()
@@ -33,7 +35,8 @@ def __build_model(lookback_days: int, predict_days: int) -> Sequential:
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
-def _predict(y:  np.ndarray) -> np.ndarray:
+
+def _predict(y: np.ndarray) -> np.ndarray:
     n_lookback = 60  # length of input sequences (lookback period)
     n_forecast = 7  # length of output sequences (forecast period)
     X = []
@@ -54,7 +57,10 @@ def _predict(y:  np.ndarray) -> np.ndarray:
     Y_ = model.predict(X_).reshape(-1, 1)
     return Y_
 
+
 YEARS = 2
+
+
 def evaluate_stocks(symbol: str, lock: Lock) -> float:
     start = dt.datetime.now() - relativedelta(years=YEARS)
     data = get_ticker_data(symbol, start, lock)
@@ -66,6 +72,7 @@ def evaluate_stocks(symbol: str, lock: Lock) -> float:
     score = float(score)
     return score
 
+
 def main():
     if len(sys.argv) < 2:
         logging.error("usage: lstm_predict <stock symbol>")
@@ -73,6 +80,7 @@ def main():
     symbol = sys.argv[1]
     score = evaluate_stocks(symbol)
     print(f"{symbol} stock score is {score}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,16 +1,16 @@
-import backtrader as bt
-import yfinance as yf
-
 import datetime as dt
-from dateutil.relativedelta import relativedelta
-import sys
 import logging
+import sys
 from threading import Lock
+
+import backtrader as bt
+from dateutil.relativedelta import relativedelta
 
 sys.path.append("../")
 from loader.loader import get_ticker_data
 
 logging.basicConfig(level=logging.INFO)
+
 
 def backtrack(ticker: str, lock: Lock) -> float:
     logging.info(f"Started backtrack {ticker}")
@@ -28,11 +28,12 @@ def backtrack(ticker: str, lock: Lock) -> float:
     diff = after_test_funds - before_test_funds
     return diff
 
+
 class SmaCross(bt.Strategy):
     # list of parameters which are configurable for the strategy
     params = dict(
         pfast=10,  # period for the fast moving average
-        pslow=30   # period for the slow moving average
+        pslow=30  # period for the slow moving average
     )
 
     def __init__(self):
@@ -47,6 +48,7 @@ class SmaCross(bt.Strategy):
 
         elif self.crossover < 0:  # in the market & cross to the downside
             self.close()  # close long position
+
 
 def main():
     if len(sys.argv) < 2:

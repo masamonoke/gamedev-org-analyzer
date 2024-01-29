@@ -6,5 +6,6 @@ with open("../secret.properties") as f:
         a = line.split("=")
         config[a[0]] = a[1][:-1]
 
+
 def config_get_key(key: str):
     return config[key]

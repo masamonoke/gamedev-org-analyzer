@@ -4,12 +4,14 @@ import prawcore
 
 import logging
 import sys
+
 sys.path.append("../")
 from config import config_get_key
 
 logging.basicConfig(format='%(asctime)s, %(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-    datefmt='%Y-%m-%d:%H:%M:%S',
-    level=logging.INFO)
+                    datefmt='%Y-%m-%d:%H:%M:%S',
+                    level=logging.INFO)
+
 
 class RedditLoader:
     def __init__(self):
@@ -31,7 +33,7 @@ class RedditLoader:
             logging.info("Logged in to Reddit API")
         return reddit
 
-    def comments(self, game: str,  post_limit: int = 5, comm_limit: int = 5):
+    def comments(self, game: str, post_limit: int = 5, comm_limit: int = 5):
         comments = []
         posts = self.reddit.subreddit(game).hot(limit=post_limit)
         try:

@@ -1,13 +1,12 @@
-from flask import Flask, request, Response
-import json
-from types import SimpleNamespace
-from dataclasses import dataclass
 import logging
 
-from model.company import *
+from flask import Flask, request, Response
+
 from filter import evaluate
+from model.company import *
 
 logging.basicConfig(level=logging.INFO)
+
 
 class FlaskApp:
     def __init__(self, eval_func, route: str, port: str, host: str = "localhost", by_symbol: bool = True):

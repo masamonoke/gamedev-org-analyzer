@@ -5,10 +5,11 @@ import logging
 from threading import Lock
 
 logging.basicConfig(format='%(asctime)s, %(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-    datefmt='%Y-%m-%d:%H:%M:%S',
-    level=logging.INFO)
+                    datefmt='%Y-%m-%d:%H:%M:%S',
+                    level=logging.INFO)
 
 ticker_data = {}
+
 
 def get_ticker_data(ticker: str, start, lock: Lock, end=dt.datetime.now()) -> DataFrame:
     logging.info(f"Getting ticker data {ticker} from {start} to nowadays")

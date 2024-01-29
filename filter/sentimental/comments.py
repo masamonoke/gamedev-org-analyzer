@@ -11,9 +11,10 @@ from loader.reddit import RedditLoader
 from loader.igdb import LoaderIGDB
 
 logging.basicConfig(format='%(asctime)s, %(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-    datefmt='%Y-%m-%d:%H:%M:%S',
-    level=logging.INFO
-)
+                    datefmt='%Y-%m-%d:%H:%M:%S',
+                    level=logging.INFO
+                    )
+
 
 class CommentsSentiment:
     def __init__(self, source: str = "reddit"):
@@ -25,14 +26,12 @@ class CommentsSentiment:
             logging.error(f"vader_lexicon not found. Downloading...")
             nltk.download('vader_lexicon')
             self.sentiment_method = SentimentIntensityAnalyzer()
-        self.comments = None
 
     def _prepareData(self, game: str):
         self.comments = self.loader.comments(game)
 
     def sentiment(self, game: str):
-        if self.comments == None:
-            self._prepareData(game)
+        self._prepareData(game)
         total_pos = 0
         total_neg = 0
 
@@ -45,12 +44,14 @@ class CommentsSentiment:
 
         s = total_neg + total_pos
         logging.info(f"total negative: {total_neg}, total positive: {total_pos}")
+        # TODO: division by zero
         score = -(total_neg / s) + (total_pos / s)
         return score
 
     def to_reddit_name(self, game: str):
         game = game.strip().replace(" ", "")
         return game
+
 
 def evaluate_comments(company_name: str, lock: Lock) -> float:
     igdb = LoaderIGDB()
@@ -72,6 +73,7 @@ def evaluate_comments(company_name: str, lock: Lock) -> float:
             logging.error(f"Not a game thread: {g.name}")
     score /= score_count
     return score
+
 
 if __name__ == "__main__":
     sent = CommentsSentiment()
