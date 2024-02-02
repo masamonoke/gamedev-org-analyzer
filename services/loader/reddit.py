@@ -2,23 +2,18 @@ import praw
 from praw.models.reddit.comment import Comment
 import prawcore
 
-import logging
 import sys
 
 sys.path.append("../")
-from config import config_get_key
-
-logging.basicConfig(format='%(asctime)s, %(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-                    datefmt='%Y-%m-%d:%H:%M:%S',
-                    level=logging.INFO)
+from config import config_get_key, logging
 
 
 class RedditLoader:
     def __init__(self):
         self.reddit = self._auth();
 
-    def _auth(self):
-        logging.info("Auth to Reddit API")
+    def _auth(self) -> praw.Reddit:
+        logging.debug("Auth to Reddit API")
         reddit = praw.Reddit(
             client_id=config_get_key("REDDIT_CLIENT_ID"),
             client_secret=config_get_key("REDDIT_SECRET"),
@@ -28,21 +23,24 @@ class RedditLoader:
         )
         if reddit.user.me() == None:
             logging.error("Auth to Reddit API failed")
-            return None
-        else:
-            logging.info("Logged in to Reddit API")
+            raise ValueError
+
         return reddit
 
-    def comments(self, game: str, post_limit: int = 5, comm_limit: int = 5):
+    def comments(self, game: str, post_limit: int = 5):
+        if len(game) == 0:
+            return []
         comments = []
-        posts = self.reddit.subreddit(game).hot(limit=post_limit)
         try:
+            posts = self.reddit.subreddit(game).hot(limit=post_limit)
             for post in posts:
                 submission = self.reddit.submission(id=post)
                 for comm in submission.comments.list():
                     if isinstance(comm, Comment):
                         comments.append(comm.body)
-        except prawcore.exceptions.Redirect as e:
+        except prawcore.exceptions.Redirect:
             logging.error(f"Cannot load subreddit of {game}. Probably it is wrong game name.")
+        except ValueError:
+            logging.error(f"Failed to load subreddit for name {game}")
 
         return comments

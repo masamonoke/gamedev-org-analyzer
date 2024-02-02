@@ -1,20 +1,15 @@
-import logging
-
 from flask import Flask, request, Response
 
-from filter import evaluate
+from evaluator import evaluate
 from model.company import *
 
-logging.basicConfig(level=logging.INFO)
-
-
 class FlaskApp:
-    def __init__(self, eval_func, route: str, port: str, host: str = "localhost", by_symbol: bool = True):
+    def __init__(self, eval_func, route: str, port: int, name: str, host: str = "localhost", by_symbol: bool = True):
         self.eval_func = eval_func
         self.route = route
         self.host = host
         self.port = port
-        self.app = Flask(__name__)
+        self.app = Flask(name)
 
         @self.app.route(f"/{self.route}", methods=["POST"])
         def predict():
@@ -28,4 +23,5 @@ class FlaskApp:
             return response
 
     def run(self):
+        self.app.logger.disabled = True
         self.app.run(host=self.host, port=self.port, threaded=True)

@@ -2,18 +2,14 @@ from datetime import datetime
 
 
 class Game:
-    def __init__(self, name: str, release_date: datetime, genres: list, hypes: None,
-                 rating: None, rating_count: None):
+    def __init__(self, name: str, release_date: int|None, genres: list|None, hypes: int|None, rating: int|None, rating_count: int|None, reddit: str):
         self.name = name
         self.release_date = release_date
         self.genres = genres
         self.hypes = hypes  # Number of follows a game gets before release
         self.rating = rating
         self.rating_count = rating_count
-
-    # TODO: define if game is update of released product or some new release
-    def isUpdate():
-        pass
+        self.reddit = reddit
 
     def _key(self):
         return (self.name)

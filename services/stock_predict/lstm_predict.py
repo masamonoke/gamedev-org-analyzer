@@ -1,22 +1,20 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import yfinance as yf
 import datetime as dt
 from sklearn.preprocessing import MinMaxScaler
 from dateutil.relativedelta import relativedelta
 from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.models import Sequential
-import time
 import sys
-import logging
 from threading import Lock
 
+
 sys.path.append("../")
+from config import logging
 from loader.loader import get_ticker_data
+from cache import TimedCache
 
-logging.basicConfig(level=logging.INFO)
-
+lstm_cache = TimedCache()
 
 def _y(data: pd.DataFrame) -> np.ndarray:
     y = data["Close"]
@@ -45,10 +43,9 @@ def _predict(y: np.ndarray) -> np.ndarray:
         X.append(y[i - n_lookback: i])
         Y.append(y[i: i + n_forecast])
 
-    start = time.time()
     X = np.array(X)
     Y = np.array(Y)
-    logging.info("Building model...")
+    logging.debug("Building model...")
     model = __build_model(n_lookback, n_forecast)
     model.fit(X, Y, epochs=100, batch_size=32, verbose=0)
     # generate the forecasts
@@ -61,7 +58,10 @@ def _predict(y: np.ndarray) -> np.ndarray:
 YEARS = 2
 
 
-def evaluate_stocks(symbol: str, lock: Lock) -> float:
+def stocks(symbol: str, lock: Lock) -> float:
+    if lstm_cache.exists(symbol):
+        return lstm_cache.get(symbol)
+
     start = dt.datetime.now() - relativedelta(years=YEARS)
     data = get_ticker_data(symbol, start, lock)
     y = _y(data)
@@ -70,17 +70,8 @@ def evaluate_stocks(symbol: str, lock: Lock) -> float:
     last_predicted = forecast[-1]
     score = last_predicted - last_actual
     score = float(score)
+    logging.info(f"Predicted stocks price score for company {symbol} is {score}")
+
+    lstm_cache.add(symbol, score)
+
     return score
-
-
-def main():
-    if len(sys.argv) < 2:
-        logging.error("usage: lstm_predict <stock symbol>")
-        return
-    symbol = sys.argv[1]
-    score = evaluate_stocks(symbol)
-    print(f"{symbol} stock score is {score}")
-
-
-if __name__ == "__main__":
-    main()

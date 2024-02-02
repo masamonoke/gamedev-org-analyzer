@@ -1,6 +1,4 @@
 from threading import Thread, Lock
-from time import sleep
-from signal import signal, SIGINT
 import os
 import subprocess
 
@@ -29,7 +27,7 @@ def main():
     central_thread = Thread(target=launch_central)
     filter_threads = [central_thread]
     for f in filters:
-        path = "filter/" + f
+        path = "services/" + f
         t = Thread(target=launch_filter, args=(path,))
         filter_threads.append(t)
     for t in filter_threads:

@@ -1,7 +1,12 @@
 from threading import Lock, Thread
+from typing import Callable
 
+import sys
 
-def evaluate(companies_scores, eval_func, by_symbol):
+sys.path.append("../")
+from model.company import CompanyScore
+
+def evaluate(companies_scores: list, eval_func: Callable[[str, Lock], float], by_symbol: bool):
     tasks = []
     lock = Lock()
 
@@ -20,8 +25,9 @@ def evaluate(companies_scores, eval_func, by_symbol):
         t.join()
 
 
-def _evaluate(score, lock, eval_func, name):
+def _evaluate(score: CompanyScore, lock: Lock, eval_func: Callable[[str, Lock], float], name: str):
     s = eval_func(name, lock)
     lock.acquire()
-    score.total_score += s
+    score.score = s
+    score.evaluator_name = eval_func.__name__
     lock.release()

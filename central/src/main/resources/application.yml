@@ -2,6 +2,6 @@ server:
   port: 3003
 # do not left comma on last uri entry
 filters: >
-  http://localhost:12000/predict,
+  http://localhost:12000/stock_predict,
   http://localhost:12001/backtest,
-  http://localhost:12002/predict
+  http://localhost:12002/modality

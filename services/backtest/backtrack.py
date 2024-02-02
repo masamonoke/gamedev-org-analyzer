@@ -1,22 +1,26 @@
 import datetime as dt
-import logging
 import sys
 from threading import Lock
 
 import backtrader as bt
 from dateutil.relativedelta import relativedelta
 
+
 sys.path.append("../")
+from config import logging
 from loader.loader import get_ticker_data
+from cache import TimedCache
 
-logging.basicConfig(level=logging.INFO)
 
+backtest_cache = TimedCache()
 
+# TODO: cache for symbol with day timeout and synchronize getting and setting
 def backtrack(ticker: str, lock: Lock) -> float:
-    logging.info(f"Started backtrack {ticker}")
+    if backtest_cache.exists(ticker):
+        return backtest_cache.get(ticker)
+
     cerebro = bt.Cerebro()
-    start = dt.datetime.now() - relativedelta(months=5)
-    # df = yf.download(ticket, start=start)
+    start = dt.datetime.now() - relativedelta(years=1)
     df = get_ticker_data(ticker, start, lock)
     feed = bt.feeds.PandasData(dataname=df)
     cerebro.adddata(feed)
@@ -26,6 +30,11 @@ def backtrack(ticker: str, lock: Lock) -> float:
     cerebro.run()
     after_test_funds = cerebro.broker.get_value()
     diff = after_test_funds - before_test_funds
+
+    logging.info(f"Backtracking score for company {ticker} is {diff}")
+
+    backtest_cache.add(ticker, diff)
+
     return diff
 
 
@@ -48,16 +57,3 @@ class SmaCross(bt.Strategy):
 
         elif self.crossover < 0:  # in the market & cross to the downside
             self.close()  # close long position
-
-
-def main():
-    if len(sys.argv) < 2:
-        print("usage: python backtrack.py <stock symbol>")
-        return
-    symbol = sys.argv[1]
-    diff = backtrack(symbol)
-    print(f"The difference is {diff}")
-
-
-if __name__ == "__main__":
-    main()
