@@ -59,6 +59,9 @@ YEARS = 2
 
 
 def stocks(symbol: str, lock: Lock) -> float:
+
+    logging.info(f"Predicting stock price for {symbol}")
+
     if lstm_cache.exists(symbol):
         return lstm_cache.get(symbol)
 

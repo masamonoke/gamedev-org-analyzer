@@ -5,17 +5,18 @@ from threading import Lock
 import backtrader as bt
 from dateutil.relativedelta import relativedelta
 
-
 sys.path.append("../")
 from config import logging
 from loader.loader import get_ticker_data
 from cache import TimedCache
 
-
 backtest_cache = TimedCache()
+
 
 # TODO: cache for symbol with day timeout and synchronize getting and setting
 def backtrack(ticker: str, lock: Lock) -> float:
+    logging.info(f"Backtracking {ticker}")
+
     if backtest_cache.exists(ticker):
         return backtest_cache.get(ticker)
 

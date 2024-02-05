@@ -1,6 +1,8 @@
 package com.masamonoke.central.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.masamonoke.central.api.service.topsis
+import com.masamonoke.central.domain.company.BestMethod
 import com.masamonoke.central.domain.company.Company
 import com.masamonoke.central.domain.company.CompanyScore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -45,16 +47,39 @@ class ReportController(
 
 		val evaluatedScores = evaluateScores(companiesScore)
 		logger.info { "Evaluated companies" }
-		return sum(evaluatedScores)
+		val scores = assemble(evaluatedScores)
+		val ranks = topsis(scores, methods(evaluatedScores))
+		var i = 0
+		ranks.forEach {
+			scores[it.first]?.put("topsis", it.second)
+		}
+
+		val sortedScores = ArrayList<Pair<String, HashMap<String, Double>>>()
+		scores.forEach {
+			sortedScores.add(Pair(it.key, it.value))
+		}
+
+		sortedScores.sortByDescending { it.second["topsis"] }
+
+		return sortedScores
     }
 
-	private fun sum(evaluatedScores: ArrayList<ArrayList<CompanyScore>>): HashMap<String, MutableMap<String, Double>> {
-		val sumScores = HashMap<String, MutableMap<String, Double>>()
+	private fun methods(evaluatedScores: ArrayList<ArrayList<CompanyScore>>): ArrayList<BestMethod> {
+		val map = ArrayList<BestMethod>()
+		evaluatedScores.forEach {
+			val entry = it.first()
+			map.add(entry.bestMethod)
+		}
+		return map
+	}
+
+	private fun assemble(evaluatedScores: ArrayList<ArrayList<CompanyScore>>): LinkedHashMap<String, LinkedHashMap<String, Double>> {
+		val sumScores = LinkedHashMap<String, LinkedHashMap<String, Double>>()
 		for (scoresList in evaluatedScores) {
 			for (companyScore in scoresList) {
 				val name = companyScore.company.name
 				if (!sumScores.contains(name)) {
-					sumScores[name] = HashMap()
+					sumScores[name] = LinkedHashMap()
 				}
 				sumScores[name]!![companyScore.evaluatorName] = companyScore.score
 			}
@@ -66,14 +91,14 @@ class ReportController(
 		val evaluatedScores = ArrayList<ArrayList<CompanyScore>>()
 		val tasks = ArrayList<Thread>()
 		for (filter in filters) {
-			val t = Thread(Runnable {
+			val t = Thread {
 				val response = request(filter, companiesScore)
 				val score = readResponse(response)
 				synchronized(this) {
 					evaluatedScores.add(score)
 				}
 				logger.info { "Completed request to filter: $filter" }
-			})
+			}
 			tasks.add(t)
 		}
 
@@ -139,10 +164,12 @@ class ReportController(
 		    )
 		    val score = it["score"]
 			val evaluatorName = it["evaluator_name"]
+			val method = it["best_method"] as String
 		    val companyScore = CompanyScore(
 		        company,
 		        score = score as Double,
-				evaluatorName = evaluatorName as String
+				evaluatorName = evaluatorName as String,
+				bestMethod = BestMethod.fromInt(method.toInt())
 		    )
 		    mutatedCompaniesScore.add(companyScore)
 		}

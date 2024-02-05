@@ -1,3 +1,4 @@
+from enum import IntEnum
 import json
 
 
@@ -7,11 +8,17 @@ class Company:
         self.symbol = symbol
 
 
+class BestMethod(IntEnum):
+    MAXIMIZE = 0,
+    MINIMIZE = 1
+
+
 class CompanyScore:
     def __init__(self, company: Company):
         self.company = company
         self.score = 0.0
         self.evaluator_name = ""
+        self.best_method = BestMethod.MAXIMIZE
 
     def to_json(self):
         return _decode(self)
@@ -20,6 +27,7 @@ class CompanyScore:
 def _decode(company_score: CompanyScore):
     d = company_score.__dict__
     d["company"] = d["company"].__dict__
+    d["best_method"] = json.dumps(d["best_method"])
     company_score_json = json.dumps(d)
     return company_score_json
 

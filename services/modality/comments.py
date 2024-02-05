@@ -52,6 +52,8 @@ class CommentsSentiment:
 
 def modality(company_name: str, lock: Lock) -> float:
 
+    logging.info(f"Evaluating modality for {company_name}")
+
     if modality_cache.exists(company_name):
         return modality_cache.get(company_name)
 
