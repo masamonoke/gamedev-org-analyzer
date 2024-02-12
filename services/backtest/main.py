@@ -1,7 +1,4 @@
 from backtrack import backtrack
-
-import sys
-sys.path.append("../")
 from flask_app import FlaskApp
 
 if __name__ == "__main__":

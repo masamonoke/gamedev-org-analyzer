@@ -1,18 +1,18 @@
 from datetime import datetime
-
+from typing import List
 
 class Game:
-    def __init__(self, name: str, release_date: int|None, genres: list|None, hypes: int|None, rating: int|None, rating_count: int|None, reddit: str):
+    def __init__(self, igdb_id: int, name: str, release_date: int, hypes: int, rating: int, rating_count: int, reddit: str):
+        self.igdb_id = igdb_id
         self.name = name
         self.release_date = release_date
-        self.genres = genres
         self.hypes = hypes  # Number of follows a game gets before release
         self.rating = rating
         self.rating_count = rating_count
         self.reddit = reddit
 
     def _key(self):
-        return (self.name)
+        return self.name
 
     def __hash__(self):
         return hash(self._key())
@@ -22,13 +22,10 @@ class Game:
             return self._key() == o._key()
         return False
 
-    def __str__(self):
-        return f"Game(name={self.name}, release_date={self.release_date}, genres={self.genres}, hypes={self.hypes}, rating={self.rating}, rating_count={self.rating_count})"
 
-
+# country is of type pycountry.db.Country
 class Company:
-    def __init__(self, id: str, name: str, developed_games: list, published_games: list, founded: datetime,
-                 country: str):
+    def __init__(self, id: str, name: str, developed_games: List[Game], published_games: List[Game], founded: datetime, country):
         self.id = id
         self.name = name
         self.developed_games = developed_games
@@ -36,7 +33,7 @@ class Company:
         self.founded = founded
         self.country = country
 
-    def listGamesName(self, sorted=True, reverse=True, with_hypes=True, sort_by="release_date"):
+    def list_games_name(self, sorted=True, reverse=True, with_hypes=True, sort_by="release_date"):
         games = self.developed_games + self.published_games
         if with_hypes:
             tmp = []
@@ -48,10 +45,3 @@ class Company:
         if sorted:
             games.sort(reverse=reverse, key=lambda x: getattr(x, sort_by))
         return games
-
-    def __str__(self):
-        d = [str(d) for d in self.developed_games]
-        d = "[" + "".join(d) + "]"
-        p = [str(p) for p in self.published_games]
-        p = "[" + "".join(p) + "]"
-        return f"Company(name={self.name}, developed_games=\n\t{d},\n published_games=\n\t{p},\n founded={self.founded}, country={self.country})"

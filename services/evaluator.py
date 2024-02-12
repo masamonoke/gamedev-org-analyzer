@@ -11,7 +11,6 @@ def evaluate(companies_scores: list, eval_func: Callable[[str, Lock], float], by
     lock = Lock()
 
     for score in companies_scores:
-        name = None
         if by_symbol:
             name = score.company.symbol
         else:

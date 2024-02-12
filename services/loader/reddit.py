@@ -21,7 +21,7 @@ class RedditLoader:
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
             username=config_get_key("REDDIT_USERNAME")
         )
-        if reddit.user.me() == None:
+        if reddit.user.me() is None:
             logging.error("Auth to Reddit API failed")
             raise ValueError
 

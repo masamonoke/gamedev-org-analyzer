@@ -1,4 +1,7 @@
 filters:
   stock_predict
   backtest
+  redis
+  igdb
   modality
+  expectation

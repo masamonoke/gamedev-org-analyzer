@@ -5,6 +5,8 @@ todo.txt
 tags
 secret.properties
 hints.txt
+dump.rdb
+companies_data.db
 
 HELP.md
 .gradle

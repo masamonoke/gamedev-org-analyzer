@@ -49,7 +49,6 @@ class ReportController(
 		logger.info { "Evaluated companies" }
 		val scores = assemble(evaluatedScores)
 		val ranks = topsis(scores, methods(evaluatedScores))
-		var i = 0
 		ranks.forEach {
 			scores[it.first]?.put("topsis", it.second)
 		}
