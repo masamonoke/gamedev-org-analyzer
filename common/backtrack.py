@@ -1,14 +1,12 @@
 import datetime as dt
-import sys
 from threading import Lock
 
 import backtrader as bt
 from dateutil.relativedelta import relativedelta
 
-sys.path.append("../")
-from config import logging
-from loader.loader import get_ticker_data
-from cache import TimedCache
+from common.config import logging
+from common.loader.loader import get_ticker_data
+from common.cache import TimedCache
 
 backtest_cache = TimedCache()
 

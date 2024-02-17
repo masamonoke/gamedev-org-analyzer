@@ -1,4 +1,3 @@
-import sys
 import time
 from threading import Lock
 import re
@@ -10,11 +9,10 @@ import nltk
 import prawcore
 from prawcore.exceptions import NotFound
 
-sys.path.append("../")
-from config import logging, IGDB_CACHE_PORT
-from loader.reddit import RedditLoader
-from cache import TimedCache
-from utilities import send_msg, recv_msg
+from common.config import logging, IGDB_CACHE_PORT
+from common.loader.reddit import RedditLoader
+from common.cache import TimedCache
+from common.utilities import send_msg, recv_msg
 
 modality_cache = TimedCache()
 

@@ -1,10 +1,8 @@
 from threading import Lock, Thread
 from typing import Callable
 
-import sys
+from common.model.company import CompanyScore
 
-sys.path.append("../")
-from model.company import CompanyScore
 
 def evaluate(companies_scores: list, eval_func: Callable[[str, Lock], float], by_symbol: bool):
     tasks = []

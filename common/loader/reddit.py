@@ -2,10 +2,7 @@ import praw
 from praw.models.reddit.comment import Comment
 import prawcore
 
-import sys
-
-sys.path.append("../")
-from config import config_get_key, logging
+from common.config import config_get_key, logging
 
 
 class RedditLoader:

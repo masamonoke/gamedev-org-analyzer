@@ -1,16 +1,12 @@
-import json
 from concurrent.futures import ThreadPoolExecutor
 import pickle
-import sys
 from threading import Lock
 import socket
 from typing import List, Set
 
-sys.path.append("../")
-from utilities import send_msg, recv_msg
-from loader.igdb import LoaderIGDB
-from config import logging
-from model.igdb import Company
+from common.utilities import send_msg, recv_msg
+from common.loader.igdb import LoaderIGDB
+from common.config import logging
 
 
 class IGDBCacheService:

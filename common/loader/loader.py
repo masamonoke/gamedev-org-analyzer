@@ -2,10 +2,8 @@ from pandas import DataFrame
 import yfinance as yf
 import datetime as dt
 from threading import Lock
-import sys
 
-sys.path.append("../")
-from config import logging
+from common.config import logging
 
 ticker_data = {}
 

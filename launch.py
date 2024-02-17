@@ -3,10 +3,9 @@ from threading import Thread, Lock
 import os
 import subprocess
 
+
 class Assembler:
     def __init__(self) -> None:
-        pass
-
         self.wd = os.getcwd()
         self.lock = Lock()
         self.filters = []
@@ -22,23 +21,23 @@ class Assembler:
     def launch_filter(self, path: str):
         self.lock.acquire()
         os.chdir(self.wd)
-        os.chdir(path)
-        p = subprocess.Popen(["python", "main.py"])
+        # os.chdir(path)
+        p = subprocess.Popen(["python", path])
         self.lock.release()
         p.wait()
-
 
     def run(self):
         self.central_thread = Thread(target=self.launch_central)
         self.filter_threads = [self.central_thread]
         for f in self.filters:
-            path = "services/" + f
+            path = f + ".py"
             t = Thread(target=self.launch_filter, args=(path,))
             self.filter_threads.append(t)
         for t in self.filter_threads:
             t.start()
         for t in self.filter_threads:
             t.join()
+
 
 if __name__ == "__main__":
     a = Assembler()
@@ -58,4 +57,5 @@ if __name__ == "__main__":
         a.run()
     except KeyboardInterrupt:
         logging.info("All services are shutdown")
-
+    except:
+        logging.error("Can't launch application")

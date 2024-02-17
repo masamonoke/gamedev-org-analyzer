@@ -5,16 +5,14 @@ from sklearn.preprocessing import MinMaxScaler
 from dateutil.relativedelta import relativedelta
 from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.models import Sequential
-import sys
 from threading import Lock
 
-
-sys.path.append("../")
-from config import logging
-from loader.loader import get_ticker_data
-from cache import TimedCache
+from common.config import logging
+from common.loader.loader import get_ticker_data
+from common.cache import TimedCache
 
 lstm_cache = TimedCache()
+
 
 def _y(data: pd.DataFrame) -> np.ndarray:
     y = data["Close"]
@@ -59,7 +57,6 @@ YEARS = 2
 
 
 def stocks(symbol: str, lock: Lock) -> float:
-
     logging.info(f"Predicting stock price for {symbol}")
 
     if lstm_cache.exists(symbol):

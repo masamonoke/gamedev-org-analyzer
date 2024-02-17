@@ -8,7 +8,7 @@ logging.basicConfig(
 
 config = {}
 
-with open("../secret.properties") as f:
+with open("secret.properties") as f:
     lines = f.readlines()
     for line in lines:
         a = line.split("=")

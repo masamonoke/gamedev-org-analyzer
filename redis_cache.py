@@ -5,17 +5,17 @@ from typing import List
 
 import redis
 
-import sys
 from concurrent.futures import ThreadPoolExecutor
 
-sys.path.append("../")
-from config import logging
-from utilities import send_msg, recv_msg
+from common.config import logging
+from common.utilities import send_msg, recv_msg
 
 
 class RedisCache():
     def __init__(self, port: int = 12100) -> None:
         self.redis_conn = redis.StrictRedis(host="127.0.0.1", port=6379)
+        self.redis_conn.ping() # if there is no connection then this line will throw
+        self.redis_conn.flushall()
         self.lock = Lock()
         self.port = port
         self.executors = ThreadPoolExecutor(max_workers=10)

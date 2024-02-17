@@ -5,4 +5,4 @@ filters: >
   http://localhost:12000/stock_predict,
   http://localhost:12001/backtest,
   http://localhost:12002/modality,
-  http://localhost:12003/expectation
+  http://localhost:12003/coverage

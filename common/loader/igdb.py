@@ -1,6 +1,5 @@
 import datetime as dt
 import json
-import sys
 from threading import Lock
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -14,17 +13,16 @@ import requests
 from dateutil.relativedelta import relativedelta
 import sqlite3
 
-sys.path.append("../")
-from config import logging, config_get_key, REDIS_CACHE_PORT
-from model.igdb import Company, Game
-from utilities import send_msg, recv_msg
+from common.config import logging, config_get_key, REDIS_CACHE_PORT
+from common.model.igdb import Company, Game
+from common.utilities import send_msg, recv_msg
 
 
 # WARNING: this class depends on redis cache service and redis server opened on 6379 port
 class IGDBCache:
     def __init__(self) -> None:
         super().__init__()
-        self.conn = sqlite3.connect("../loader/companies_data.db", check_same_thread=False)
+        self.conn = sqlite3.connect("companies_data.db", check_same_thread=False)
         self.lock = Lock()
 
         host = socket.gethostname()
@@ -213,8 +211,6 @@ igdb_cache = IGDBCache()
 
 class LoaderIGDB:
 
-    instances = 0
-
     def __init__(self):
         self.client_id = config_get_key("CLIENT_ID")
         self.client_secret = config_get_key("CLIENT_SECRET")
@@ -245,6 +241,7 @@ class LoaderIGDB:
         logging.debug(f"Getting '{name}' company data")
         headers = self.header()
         raw_data = f"fields *; where name = \"{name}\";"
+        time.sleep(1)
         r = requests.post("https://api.igdb.com/v4/companies/", headers=headers, data=raw_data)
         try:
             j = json.loads(r.text)[0]
@@ -333,6 +330,7 @@ class LoaderIGDB:
         for part in ids_parts:
             text = ",".join([str(id) for id in part])
             raw_data = f"fields *; where id = ({text}) & first_release_date > {date} & category = 0 & version_parent = null;"
+            time.sleep(1)
             r = requests.post("https://api.igdb.com/v4/games/", headers=headers, data=raw_data)
             j = json.loads(r.text)
             jsons += j
@@ -350,6 +348,7 @@ class LoaderIGDB:
                     games.append(g)
                 else:
                     raw_data = f"fields url; where category = 14 & game = {j['id']};"
+                    time.sleep(1)
                     r = requests.post("https://api.igdb.com/v4/websites/", headers=headers, data=raw_data)
                     sites_json = json.loads(r.text)
                     if len(sites_json) > 0:
@@ -413,8 +412,6 @@ class LoaderIGDB:
                 if "id" in j:
                     language_supports = j["language_supports"] if "language_supports" in j.keys() else []
                     res[j["id"]] = language_supports
-            else:
-                logging.error(f"Got error from IGDB while fetching language supports: {j}")
 
         return res
 

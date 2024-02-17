@@ -1,7 +1,7 @@
 filters:
   stock_predict
   backtest
-  redis
-  igdb
+  redis_cache
+  igdb_cache
   modality
-  expectation
+  coverage

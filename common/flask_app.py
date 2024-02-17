@@ -1,7 +1,8 @@
 from flask import Flask, request, Response
 
-from evaluator import evaluate
-from model.company import *
+from common.evaluator import evaluate
+from common.model.company import *
+
 
 class FlaskApp:
     def __init__(self, eval_func, route: str, port: int, name: str, host: str = "localhost", by_symbol: bool = True):

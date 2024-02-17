@@ -1,17 +1,15 @@
 from threading import Lock
-import sys
 import socket
 import pickle
 
-sys.path.append("../")
-from config import logging, IGDB_CACHE_PORT
-from cache import TimedCache
-from utilities import send_msg, recv_msg
+from common.config import logging, IGDB_CACHE_PORT
+from common.cache import TimedCache
+from common.utilities import send_msg, recv_msg
 
 expectation_cache = TimedCache()
 
-def expectation(company_name: str, lock: Lock) -> float:
 
+def coverage(company_name: str, lock: Lock) -> float:
     if expectation_cache.exists(company_name):
         return expectation_cache.get(company_name)
 
@@ -31,7 +29,7 @@ def expectation(company_name: str, lock: Lock) -> float:
     if company is None:
         return 0
 
-    logging.info(f"Evaluating expectation score for {company_name}")
+    logging.info(f"Evaluating coverage score for {company_name}")
 
     score = 0
 
@@ -66,7 +64,7 @@ def expectation(company_name: str, lock: Lock) -> float:
 
     score += avg_lang_support + unique_genres_count
 
-    logging.info(f"Expectation score for {company_name} is {score} based on {len(game_ids)} games")
+    logging.info(f"Coverage score for {company_name} is {score} based on {len(game_ids)} games")
 
     expectation_cache.add(company_name, score)
 
