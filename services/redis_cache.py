@@ -2,10 +2,11 @@ import pickle
 import socket
 from threading import Lock
 from typing import List
+from concurrent.futures import ThreadPoolExecutor
+import sys
+sys.path.append("../")
 
 import redis
-
-from concurrent.futures import ThreadPoolExecutor
 
 from common.config import logging
 from common.utilities import send_msg, recv_msg

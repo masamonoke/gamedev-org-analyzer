@@ -3,7 +3,9 @@ import pickle
 from threading import Lock
 import socket
 from typing import List, Set
+import sys
 
+sys.path.append("../")
 from common.utilities import send_msg, recv_msg
 from common.loader.igdb import LoaderIGDB
 from common.config import logging

@@ -1,3 +1,6 @@
+import sys
+
+sys.path.append("../")
 from common.coverage import coverage
 from common.flask_app import FlaskApp
 

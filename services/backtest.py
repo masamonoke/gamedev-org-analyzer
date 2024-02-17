@@ -1,3 +1,6 @@
+import sys
+
+sys.path.append("../")
 from common.backtrack import backtrack
 from common.flask_app import FlaskApp
 

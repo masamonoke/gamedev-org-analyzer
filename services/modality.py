@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 from common.comments import modality
 from common.flask_app import FlaskApp
 

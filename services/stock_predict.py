@@ -1,3 +1,6 @@
+import sys
+
+sys.path.append("../")
 from common.lstm_predict import stocks
 from common.flask_app import FlaskApp
 

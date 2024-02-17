@@ -2,13 +2,16 @@ import logging
 from threading import Thread, Lock
 import os
 import subprocess
+from typing import List, Tuple
 
 
 class Assembler:
     def __init__(self) -> None:
+        self.filter_threads = None
+        self.central_thread = None
         self.wd = os.getcwd()
         self.lock = Lock()
-        self.filters = []
+        self.filters: List[Tuple[str, str]] = []
 
     def launch_central(self):
         self.lock.acquire()
@@ -18,11 +21,11 @@ class Assembler:
         self.lock.release()
         p.wait()
 
-    def launch_filter(self, path: str):
+    def launch_filter(self, path: str, command: str, filename: str):
         self.lock.acquire()
         os.chdir(self.wd)
-        # os.chdir(path)
-        p = subprocess.Popen(["python", path])
+        os.chdir(path)
+        p = subprocess.Popen([command, filename])
         self.lock.release()
         p.wait()
 
@@ -30,8 +33,15 @@ class Assembler:
         self.central_thread = Thread(target=self.launch_central)
         self.filter_threads = [self.central_thread]
         for f in self.filters:
-            path = f + ".py"
-            t = Thread(target=self.launch_filter, args=(path,))
+            filename, lang = f
+            match lang:
+                case "python":
+                    path = "services/"
+                    file = filename + ".py"
+                    command = "python"
+                case _:
+                    raise ValueError("Unknown language")
+            t = Thread(target=self.launch_filter, args=(path, command, file))
             self.filter_threads.append(t)
         for t in self.filter_threads:
             t.start()
@@ -52,7 +62,8 @@ if __name__ == "__main__":
                 if not s.startswith(" "):
                     reading_filters = False
                     continue
-                a.filters.append(s.strip())
+                service_name, lang = s.strip().split(":")
+                a.filters.append((service_name, lang))
     try:
         a.run()
     except KeyboardInterrupt:

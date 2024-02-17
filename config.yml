@@ -1,7 +1,7 @@
 filters:
-  stock_predict
-  backtest
-  redis_cache
-  igdb_cache
-  modality
-  coverage
+  stock_predict:python
+  backtest:python
+  redis_cache:python
+  igdb_cache:python
+  modality:python
+  coverage:python
