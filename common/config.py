@@ -14,9 +14,11 @@ with open("secret.properties") as f:
         a = line.split("=")
         config[a[0]] = a[1][:-1]
 
+config["is_debug"] = True
 
 def config_get_key(key: str):
     return config[key]
 
+# TODO: probably this data should be taken from config
 REDIS_CACHE_PORT = 12100
 IGDB_CACHE_PORT = 12101

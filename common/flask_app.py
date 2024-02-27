@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 
 from common.evaluator import evaluate
 from common.model.company import *
+from common.config import config
 
 
 class FlaskApp:
@@ -25,4 +26,9 @@ class FlaskApp:
 
     def run(self):
         self.app.logger.disabled = True
-        self.app.run(host=self.host, port=self.port, threaded=True)
+        is_debug = config["is_debug"]
+        if is_debug:
+            self.app.run(host=self.host, port=self.port, threaded=True)
+        else:
+            from waitress import serve
+            serve(app=self.app, host=self.host, port=self.port)

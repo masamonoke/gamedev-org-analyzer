@@ -14,9 +14,10 @@ private fun normalize(matrix: List<List<Double>>): Array<DoubleArray> {
         column.forEachIndexed { col, score ->
             var sum = 0.0
             for (r in 0 until rows) {
-                sum += abs(matrix[r][col])
+				val value = if (matrix[r][col] < 0) 0.0000000001 else matrix[r][col]
+                sum += value
             }
-            normalizedMatrix[row][col] = score / sum
+            normalizedMatrix[row][col] = score / sqrt(sum)
         }
     }
 

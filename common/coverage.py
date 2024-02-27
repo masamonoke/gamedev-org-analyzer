@@ -6,12 +6,12 @@ from common.config import logging, IGDB_CACHE_PORT
 from common.cache import TimedCache
 from common.utilities import send_msg, recv_msg
 
-expectation_cache = TimedCache()
+coverage_cache = TimedCache()
 
 
 def coverage(company_name: str, lock: Lock) -> float:
-    if expectation_cache.exists(company_name):
-        return expectation_cache.get(company_name)
+    if coverage_cache.exists(company_name):
+        return coverage_cache.get(company_name)
 
     host = socket.gethostname()
     port = IGDB_CACHE_PORT
@@ -66,7 +66,7 @@ def coverage(company_name: str, lock: Lock) -> float:
 
     logging.info(f"Coverage score for {company_name} is {score} based on {len(game_ids)} games")
 
-    expectation_cache.add(company_name, score)
+    coverage_cache.add(company_name, score)
 
     sock.close()
     logging.info(f"Closed socket after loading {company_name}")

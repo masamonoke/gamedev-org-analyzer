@@ -2,7 +2,14 @@ import logging
 from threading import Thread, Lock
 import os
 import subprocess
+import time
 from typing import List, Tuple
+
+logging.basicConfig(
+    format='%(asctime)s, %(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO
+)
 
 
 class Assembler:
@@ -30,7 +37,7 @@ class Assembler:
         p.wait()
 
     def run(self):
-        self.central_thread = Thread(target=self.launch_central)
+        self.central_thread = Thread(target=self.launch_central, name="central")
         self.filter_threads = [self.central_thread]
         for f in self.filters:
             filename, lang = f
@@ -41,10 +48,12 @@ class Assembler:
                     command = "python"
                 case _:
                     raise ValueError("Unknown language")
-            t = Thread(target=self.launch_filter, args=(path, command, file))
+            t = Thread(target=self.launch_filter, args=(path, command, file), name=filename)
             self.filter_threads.append(t)
         for t in self.filter_threads:
             t.start()
+            logging.info(f"Starting thread {t.name}")
+            time.sleep(2)
         for t in self.filter_threads:
             t.join()
 

@@ -10,6 +10,7 @@ from common.cache import TimedCache
 
 backtest_cache = TimedCache()
 
+#for reference https://www.backtrader.com/docu/quickstart/quickstart/
 
 # TODO: cache for symbol with day timeout and synchronize getting and setting
 def backtrack(ticker: str, lock: Lock) -> float:
@@ -38,21 +39,20 @@ def backtrack(ticker: str, lock: Lock) -> float:
 
 
 class SmaCross(bt.Strategy):
-    # list of parameters which are configurable for the strategy
     params = dict(
-        pfast=10,  # period for the fast moving average
-        pslow=30  # period for the slow moving average
+        pfast=10,
+        pslow=30
     )
 
     def __init__(self):
-        sma1 = bt.ind.SMA(period=self.p.pfast)  # fast moving average
-        sma2 = bt.ind.SMA(period=self.p.pslow)  # slow moving average
-        self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
+        sma1 = bt.ind.SMA(period=self.p.pfast)
+        sma2 = bt.ind.SMA(period=self.p.pslow)
+        self.crossover = bt.ind.CrossOver(sma1, sma2)
 
     def next(self):
-        if not self.position:  # not in the market
-            if self.crossover > 0:  # if fast crosses slow to the upside
-                self.buy()  # enter long
+        if not self.position:
+            if self.crossover > 0:
+                self.buy()
 
-        elif self.crossover < 0:  # in the market & cross to the downside
-            self.close()  # close long position
+        elif self.crossover < 0:
+            self.close()

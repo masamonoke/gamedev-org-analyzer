@@ -3,8 +3,8 @@ import pandas as pd
 import datetime as dt
 from sklearn.preprocessing import MinMaxScaler
 from dateutil.relativedelta import relativedelta
-from tensorflow.keras.layers import Dense, LSTM
-from tensorflow.keras.models import Sequential
+from keras.layers import Dense, LSTM
+from keras.models import Sequential
 from threading import Lock
 
 from common.config import logging
@@ -45,7 +45,7 @@ def _predict(y: np.ndarray) -> np.ndarray:
     Y = np.array(Y)
     logging.debug("Building model...")
     model = __build_model(n_lookback, n_forecast)
-    model.fit(X, Y, epochs=100, batch_size=32, verbose=0)
+    model.fit(X, Y, epochs=100, batch_size=32, verbose=0) # type: ignore
     # generate the forecasts
     X_ = y[- n_lookback:]  # last available input sequence
     X_ = X_.reshape(1, n_lookback, 1)

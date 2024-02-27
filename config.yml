@@ -5,3 +5,4 @@ filters:
   igdb_cache:python
   modality:python
   coverage:python
+  fundamental:python
