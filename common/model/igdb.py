@@ -2,13 +2,16 @@ from datetime import datetime
 from typing import List
 
 class Game:
-    def __init__(self, igdb_id: int, name: str, release_date: int, hypes: int, rating: int, rating_count: int, reddit: str):
+    def __init__(self, igdb_id: int, name: str, release_date: int, hypes: int, user_rating: float, user_rating_count: int, critic_rating: float, critic_rating_count: int,
+            reddit: str):
         self.igdb_id = igdb_id
         self.name = name
         self.release_date = release_date
         self.hypes = hypes  # Number of follows a game gets before release
-        self.rating = rating
-        self.rating_count = rating_count
+        self.user_rating = user_rating
+        self.user_rating_count = user_rating_count
+        self.critic_rating = critic_rating
+        self.critic_rating_count = critic_rating_count
         self.reddit = reddit
 
     def _key(self):

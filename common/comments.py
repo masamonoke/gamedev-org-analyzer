@@ -3,6 +3,7 @@ from threading import Lock
 import re
 import socket
 import pickle
+from typing import List
 
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
@@ -12,6 +13,7 @@ from prawcore.exceptions import NotFound
 from common.config import logging, IGDB_CACHE_PORT
 from common.loader.reddit import RedditLoader
 from common.cache import TimedCache
+from common.model.igdb import Game
 from common.utilities import send_msg, recv_msg
 
 modality_cache = TimedCache()
@@ -75,7 +77,7 @@ def modality(company_name: str, lock: Lock) -> float:
     if company is None:
         return 0
 
-    games = company.list_games_name()
+    games: List[Game] = company.list_games_name()
 
     sent = CommentsSentiment()
     score: float = 0
@@ -109,8 +111,6 @@ def modality(company_name: str, lock: Lock) -> float:
                     continue
             # TODO: make in parallel
             try:
-                if g.rating_count != 0:
-                    score += (g.rating / 100) / g.rating_count
                 score += sent.sentiment(name)
             except prawcore.exceptions.Forbidden:
                 logging.error(f"Exception evaluating comments for {name}: 403 Forbidden")

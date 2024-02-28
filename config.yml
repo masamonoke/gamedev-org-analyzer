@@ -6,3 +6,4 @@ filters:
   modality:python
   coverage:python
   fundamental:python
+  critic:python

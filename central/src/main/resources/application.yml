@@ -6,4 +6,5 @@ filters: >
   http://localhost:12001/backtest,
   http://localhost:12002/modality,
   http://localhost:12003/coverage,
-  http://localhost:12004/fundamental
+  http://localhost:12004/fundamental,
+  http://localhost:12005/critic

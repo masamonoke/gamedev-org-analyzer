@@ -40,8 +40,10 @@ class IGDBCache:
                 name TEXT,
                 release_date INTEGER,
                 hypes INTEGER,
-                rating REAL,
-                rating_count REAL,
+                user_rating REAL,
+                user_rating_count REAL,
+                critic_rating REAL,
+                critic_rating_count REAL,
                 reddit TEXT,
                 company_name TEXT,
                 game_type TEXT
@@ -103,21 +105,21 @@ class IGDBCache:
         self.lock.acquire()
 
         query = """
-            INSERT INTO game (igdb_id, name, release_date, hypes, rating, rating_count, reddit, company_name, game_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO game (igdb_id, name, release_date, hypes, user_rating, user_rating_count, critic_rating, critic_rating_count, reddit, company_name, game_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         # TODO: make sure that games in developed and in published is unique and not duplicating
         for g in entry.developed_games:
             try:
                 self.conn.execute(query, (
-                    g.igdb_id, g.name, g.release_date, g.hypes, g.rating, g.rating_count, g.reddit, key, "developed"))
+                    g.igdb_id, g.name, g.release_date, g.hypes, g.user_rating, g.user_rating_count,  g.critic_rating, g.critic_rating_count,g.reddit, key, "developed"))
             except sqlite3.IntegrityError:
                 logging.error(f"Tried to save game that is already in database: {g.name}")
 
         for g in entry.published_games:
             try:
                 self.conn.execute(query, (
-                    g.igdb_id, g.name, g.release_date, g.hypes, g.rating, g.rating_count, g.reddit, key, "published"))
+                    g.igdb_id, g.name, g.release_date, g.hypes, g.user_rating, g.user_rating_count, g.critic_rating, g.critic_rating_count, g.reddit, key, "published"))
             except sqlite3.IntegrityError:
                 logging.error(f"Tried to save game that is already in database: {g.name}")
 
@@ -136,7 +138,7 @@ class IGDBCache:
         self.lock.release()
 
     def _game_from_db_fetch(self, t: tuple):
-        game = Game(t[1], t[2], t[3], t[4], t[5], t[6], t[7])
+        game = Game(t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9])
 
         return game
 
@@ -338,13 +340,15 @@ class LoaderIGDB:
         for j in jsons:
             if type(j) != str:
                 hypes = j["hypes"] if "hypes" in j.keys() else 0
-                rating = j["rating"] if "rating" in j.keys() else 0
-                rating_count = 0 if rating == 0 else j["rating_count"]
+                user_rating = j["rating"] if "rating" in j.keys() else 0
+                user_rating_count = 0 if user_rating == 0 else j["rating_count"]
+                critic_rating = j["total_rating"] if "total_rating" in j.keys() else 0
+                critic_rating_count = 0 if critic_rating == 0 else j["total_rating_count"]
                 first_release_date = j["first_release_date"] if "first_release_date" in j.keys() else 0
                 reddit_url = ""
 
                 if only_announced:
-                    g = Game(j["id"], j["name"], first_release_date, hypes, rating, rating_count, reddit_url)
+                    g = Game(j["id"], j["name"], first_release_date, hypes, user_rating, user_rating_count, critic_rating, critic_rating_count,reddit_url)
                     games.append(g)
                 else:
                     raw_data = f"fields url; where category = 14 & game = {j['id']};"
@@ -356,7 +360,7 @@ class LoaderIGDB:
                             reddit_url = sites_json[0]["url"]
                         except:
                             logging.error(f"Got exception fetching reddit url: {sites_json}")
-                    g = Game(j["id"], j["name"], first_release_date, hypes, rating, rating_count, reddit_url)
+                    g = Game(j["id"], j["name"], first_release_date, hypes, user_rating, user_rating_count, critic_rating, critic_rating_count, reddit_url)
                     games.append(g)
             else:
                 logging.error(f"Got error from IGDB while fetching games")

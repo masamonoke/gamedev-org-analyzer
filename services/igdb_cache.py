@@ -12,10 +12,11 @@ from common.config import logging
 
 
 class IGDBCacheService:
-    def __init__(self, port: int = 12101) -> None:
+    def __init__(self, port: int = 12101, workers: int = 20) -> None:
         self.lock = Lock()
         self.port = port
-        self.executors = ThreadPoolExecutor(max_workers=10)
+        self.executors = ThreadPoolExecutor(max_workers=workers)
+        self.workers = workers
         self.sockets: List[socket.socket] = []
         self.loader = LoaderIGDB()
         self.companies_loading_list: Set[str] = set()
@@ -31,7 +32,7 @@ class IGDBCacheService:
         try:
             server_socket.bind((host, self.port))
 
-            server_socket.listen(10)
+            server_socket.listen(self.workers)
             while True:
                 conn, address = server_socket.accept()
                 self.sockets.append(conn)
@@ -86,7 +87,3 @@ class IGDBCacheService:
                     else:
                         logging.error(f"Wrong data type passed: {type(data)}")
 
-
-if __name__ == '__main__':
-    cache = IGDBCacheService()
-    cache.run()
