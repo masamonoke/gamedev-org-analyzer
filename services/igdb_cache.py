@@ -87,3 +87,7 @@ class IGDBCacheService:
                     else:
                         logging.error(f"Wrong data type passed: {type(data)}")
 
+
+if __name__ == '__main__':
+    cache = IGDBCacheService()
+    cache.run()

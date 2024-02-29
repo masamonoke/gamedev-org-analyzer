@@ -103,7 +103,7 @@ def critic_score(company_name: str, lock: Lock) -> float:
 
     score = score / (igdb_scores_num + open_critic_scores_num)
 
-    logging.info(f"Critic score for {company_name} is {score}. Based on {open_critic_scores_num} Open Critic scores and {igdb_scores_num} IGDB scores")
+    logging.info(f"Critic score for {company_name} is {score}. Based on {open_critic_scores_num} Open Critic score medians and {igdb_scores_num} IGDB score medians")
 
     return score
 
