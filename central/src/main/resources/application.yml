@@ -2,9 +2,10 @@ server:
   port: 3003
 # do not left comma on last uri entry
 filters: >
-  http://localhost:12000/stock_predict,
-  http://localhost:12001/backtest,
-  http://localhost:12002/modality,
-  http://localhost:12003/coverage,
-  http://localhost:12004/fundamental,
-  http://localhost:12005/critic
+  http://stock_predict_service:12000/stock_predict,
+  http://modality_service:12002/modality,
+  http://fundamental_service:12004/fundamental,
+  http://critic_service:12005/critic,
+  http://user_score_service:12006/user_score,
+  http://language_support_service:12003/language_support,
+  http://games_released_service:12007/games_release

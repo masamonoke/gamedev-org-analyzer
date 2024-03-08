@@ -1,9 +1,0 @@
-filters:
-  stock_predict:python
-  backtest:python
-  redis_cache:python
-  igdb_cache:python
-  modality:python
-  coverage:python
-  fundamental:python
-  critic:python

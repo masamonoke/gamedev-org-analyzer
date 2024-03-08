@@ -1,0 +1,5 @@
+Flask==2.3.2
+waitress==3.0.0
+requests==2.31.0
+pycountry==22.3.5
+python_dateutil==2.8.2

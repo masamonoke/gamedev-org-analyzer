@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  redis_cache:
+    build:
+      context: .
+      dockerfile: dockerfiles/redis_cache.Dockerfile
+    container_name: redis_cache
+    depends_on: [redis-server]
+    ports:
+      - '12100:12100'
+    expose:
+      - 12100
+
+  igdb_cache:
+    build:
+      context: .
+      dockerfile: dockerfiles/igdb_cache.Dockerfile
+    container_name: igdb_cache
+    depends_on:
+      [redis_cache]
+    ports:
+      - '12101:12101'
+    expose:
+      - 12101
+
+  central:
+    build:
+      context: .
+      dockerfile: dockerfiles/central.Dockerfile
+    container_name: central
+    ports:
+      - '3003:3003'
+    expose:
+      - 3003
+
+  critic_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/critic.Dockerfile
+    container_name: critic_service
+    depends_on: [igdb_cache]
+    ports:
+      - '12005:12005'
+    expose:
+      - 12005
+
+  language_support_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/language_support.Dockerfile
+    container_name: language_support
+    depends_on: [igdb_cache]
+    ports:
+      - '12003:12003'
+    expose:
+      - 12003
+
+  modality_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/modality.Dockerfile
+    container_name: modality_service
+    depends_on: [igdb_cache]
+    ports:
+      - '12002:12002'
+    expose:
+      - 12002
+
+  stock_predict_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/stock_predict.Dockerfile
+    container_name: stock_predict_service
+    ports:
+      - '12000:12000'
+    expose:
+      - 12000
+
+  fundamental_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/fundamental.Dockerfile
+    container_name: fundamental_service
+    ports:
+      - '12004:12004'
+    expose:
+      - 12004
+
+  games_released_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/games_released.Dockerfile
+    container_name: games_released_service
+    depends_on: [igdb_cache]
+    ports:
+      - '12007:12007'
+    expose:
+      - 12007
+
+  user_score_service:
+    build:
+      context: .
+      dockerfile: dockerfiles/user_score.Dockerfile
+    container_name: user_score_service
+    depends_on: [igdb_cache]
+    ports:
+      - '12006:12006'
+    expose:
+      - 12006
+
+  redis-server:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    expose:
+      - 6379
+    command: redis-server --save 20 1 --loglevel warning
